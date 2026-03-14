@@ -4,19 +4,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.darazfakenative.data.model.Category
 import com.example.darazfakenative.data.model.User
+import com.example.darazfakenative.data.preferences.ThemePreferences
 import com.example.darazfakenative.data.repository.CategoryRepository
 import com.example.darazfakenative.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val themePreferences: ThemePreferences
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -25,6 +28,15 @@ class ProfileViewModel @Inject constructor(
     init {
         loadUserData()
         loadCategories()
+        observeTheme()
+    }
+    
+    private fun observeTheme() {
+        viewModelScope.launch {
+            themePreferences.darkThemeFlow.collect { isDarkTheme ->
+                _uiState.value = _uiState.value.copy(isDarkTheme = isDarkTheme)
+            }
+        }
     }
     
     private fun loadUserData() {
@@ -62,6 +74,13 @@ class ProfileViewModel @Inject constructor(
         }
     }
     
+    fun toggleTheme() {
+        viewModelScope.launch {
+            val newTheme = !_uiState.value.isDarkTheme
+            themePreferences.setDarkTheme(newTheme)
+        }
+    }
+    
     fun refresh() {
         loadUserData()
     }
@@ -75,5 +94,6 @@ data class ProfileUiState(
     val user: User? = null,
     val categories: List<Category> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isDarkTheme: Boolean = false
 )

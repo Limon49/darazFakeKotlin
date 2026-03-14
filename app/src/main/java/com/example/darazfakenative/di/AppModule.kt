@@ -1,6 +1,8 @@
 package com.example.darazfakenative.di
 
+import android.content.Context
 import com.example.darazfakenative.data.api.FakeApiService
+import com.example.darazfakenative.data.preferences.ThemePreferences
 import com.example.darazfakenative.data.repository.CartRepository
 import com.example.darazfakenative.data.repository.CategoryRepository
 import com.example.darazfakenative.data.repository.ProductRepository
@@ -8,6 +10,7 @@ import com.example.darazfakenative.data.repository.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -16,6 +19,10 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Provides
+    @Singleton
+    fun provideContext(@ApplicationContext context: Context): Context = context
 
     @Provides
     @Singleton
@@ -56,5 +63,11 @@ object AppModule {
     @Singleton
     fun provideUserRepository(): UserRepository {
         return UserRepository()
+    }
+
+    @Provides
+    @Singleton
+    fun provideThemePreferences(context: Context): ThemePreferences {
+        return ThemePreferences(context)
     }
 }
